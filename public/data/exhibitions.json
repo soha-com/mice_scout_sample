@@ -1,0 +1,12 @@
+{
+    "exhibitions": [
+        {
+            "id": "intl-photonics-expo",
+            "name": "국제광융합 EXPO",
+            "category": "광융합/포토닉스",
+            "reports": [
+                "2026-02"
+            ]
+        }
+    ]
+}

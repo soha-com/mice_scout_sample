@@ -3,26 +3,8 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'MICE Scout - 국제광융합 EXPO',
-  description: '전시 참가 후보 기업 브리프 - Keyword + Strategy',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  title: 'MICE Scout — AI 기반 전시 참가 후보 기업 분석',
+  description: 'MICE Scout은 뉴스 데이터를 분석하여 잠재적 전시 참가 기업을 발굴하고, 주최사에게 섭외 전략과 기대 효과를 제공합니다.',
 }
 
 export default function RootLayout({

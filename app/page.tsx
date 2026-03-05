@@ -1,5 +1,5 @@
-import MiceScout from '@/components/mice-scout'
+import LandingPage from '@/components/landing-page'
 
 export default function Home() {
-  return <MiceScout />
+  return <LandingPage />
 }
