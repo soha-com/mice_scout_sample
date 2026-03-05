@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
     Building2, Calendar, Copy, Check, ExternalLink, Sparkles,
-    ChevronRight, Link2, Eye, Tag, FileText, ArrowLeft, LayoutGrid
+    ChevronRight, Link2, Eye, Tag, FileText, ArrowLeft, LayoutGrid,
+    Lock, KeyRound
 } from 'lucide-react'
 
 interface Exhibition {
@@ -19,6 +20,11 @@ interface ExhibitionsData {
 }
 
 export default function AdminView() {
+    const [authenticated, setAuthenticated] = useState(false)
+    const [password, setPassword] = useState('')
+    const [authError, setAuthError] = useState('')
+    const [authLoading, setAuthLoading] = useState(false)
+
     const [exhibitions, setExhibitions] = useState<Exhibition[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedExhibition, setSelectedExhibition] = useState<Exhibition | null>(null)
@@ -26,7 +32,31 @@ export default function AdminView() {
     const [copied, setCopied] = useState(false)
     const [generatedUrl, setGeneratedUrl] = useState('')
 
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setAuthLoading(true)
+        setAuthError('')
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password }),
+            })
+            const data = await res.json()
+            if (data.success) {
+                setAuthenticated(true)
+            } else {
+                setAuthError(data.message || '인증에 실패했습니다.')
+            }
+        } catch {
+            setAuthError('서버와 통신할 수 없습니다.')
+        } finally {
+            setAuthLoading(false)
+        }
+    }
+
     useEffect(() => {
+        if (!authenticated) return
         fetch('/data/exhibitions.json')
             .then(res => res.json())
             .then((data: ExhibitionsData) => {
@@ -34,7 +64,7 @@ export default function AdminView() {
                 setLoading(false)
             })
             .catch(() => setLoading(false))
-    }, [])
+    }, [authenticated])
 
     const generateToken = (exhibitionId: string, month: string) => {
         return btoa(`${exhibitionId}:${month}`)
@@ -77,6 +107,55 @@ export default function AdminView() {
         acc[ex.category].push(ex)
         return acc
     }, {})
+
+    // Login screen
+    if (!authenticated) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+                <div className="w-full max-w-sm">
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+                        <div className="flex flex-col items-center mb-6">
+                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-4">
+                                <Lock size={24} className="text-white" />
+                            </div>
+                            <h1 className="text-xl font-bold text-slate-800">관리자 인증</h1>
+                            <p className="text-sm text-slate-400 font-medium mt-1">비밀번호를 입력해주세요</p>
+                        </div>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div className="relative">
+                                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <input
+                                    type="password"
+                                    placeholder="비밀번호"
+                                    value={password}
+                                    onChange={(e) => { setPassword(e.target.value); setAuthError('') }}
+                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium transition-all"
+                                    autoFocus
+                                />
+                            </div>
+                            {authError && (
+                                <p className="text-xs text-red-500 font-medium text-center">{authError}</p>
+                            )}
+                            <button
+                                type="submit"
+                                disabled={authLoading || !password}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-600/20 disabled:shadow-none flex items-center justify-center gap-2"
+                            >
+                                {authLoading ? (
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    '로그인'
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                    <div className="text-center mt-4">
+                        <a href="/" className="text-xs text-slate-400 hover:text-slate-600 font-medium transition-colors">← 홈으로 돌아가기</a>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     if (loading) {
         return (
@@ -142,8 +221,8 @@ export default function AdminView() {
                                             setGeneratedUrl('')
                                         }}
                                         className={`text-left p-5 rounded-2xl border transition-all group ${selectedExhibition?.id === ex.id
-                                                ? 'bg-blue-50 border-blue-200 shadow-sm'
-                                                : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
+                                            ? 'bg-blue-50 border-blue-200 shadow-sm'
+                                            : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
                                             }`}
                                     >
                                         <div className="flex items-start justify-between mb-3">
@@ -241,8 +320,8 @@ export default function AdminView() {
                                             <button
                                                 onClick={handleCopy}
                                                 className={`shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ${copied
-                                                        ? 'bg-emerald-600 text-white'
-                                                        : 'bg-white text-slate-900 hover:bg-slate-200'
+                                                    ? 'bg-emerald-600 text-white'
+                                                    : 'bg-white text-slate-900 hover:bg-slate-200'
                                                     }`}
                                             >
                                                 {copied ? (
